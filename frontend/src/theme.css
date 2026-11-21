@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC&family=IBM+Plex+Mono&display=swap');
+:root {
+  --title-font: "Noto Sans SC"; --body-font: "IBM Plex Mono";
+  --paper: oklch(.982 .012 241); --sheet: oklch(.996 .005 241); --ink: oklch(.225 .032 241);
+  --soft: oklch(.938 .031 241); --line: oklch(.837 .036 241); --muted: oklch(.43 .047 241);
+  --accent: oklch(.455 .06 241); --accent-dark: oklch(.354 .06 241);
+  --hero: oklch(.305 .06 241); --hero-text: oklch(.979 .018 241);
+  --button-text: oklch(.984 .012 241); --radius: 0px; --rule: 4px;
+  --navigation: 12.8rem; --login-columns: 1.45fr 1fr;
+}
