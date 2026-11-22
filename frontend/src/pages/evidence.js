@@ -8,14 +8,15 @@ export function evidencePage(state, identity) {
   const current = state.evidence.find(row=>row.id===identity) || state.evidence[0];
   if (!current) return heading(topic.modules[3]) + '<p class="empty">执行完成后，可查看、复核和导出证据。</p>';
   const {report} = current;
-  const metrics = Object.entries(report.metrics).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('');
-  const sections = report.sections.map(x=>panel(x.title, entries(x.rows))).join('');
+  const metrics = report ? Object.entries(report.metrics).map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('') : '';
+  const sections = report ? report.sections.map(x=>panel(x.title, entries(x.rows))).join('') : '';
   const review = current.reviewer ? `<p data-testid="reviewed">${esc(current.reviewer)} · ${esc(date(current.reviewed_at))}</p><p>${esc(current.review_note)}</p>`
     : state.session.role==='reviewer'?'<form id="review-form"><label>复核意见<textarea name="note" maxlength="500" required></textarea></label><button>签署复核</button></form>'
     : '<p class="note">待复核员签署</p>';
-  const history = state.evidence.map(row=>[`<a href="#evidence/${row.id}">执行 ${row.run_id}</a>`, esc(row.report.summary), esc(row.reviewer || '待复核')]);
-  return `${heading(topic.modules[3], report.summary, `<button id="download" data-id="${current.id}">导出证据</button>`)}
-    <div class="spread evidence-top"><dl class="metrics">${metrics}</dl><aside class="brief"><h2>复核签署</h2>${review}<details><summary>结果校验码</summary><code class="digest">${esc(current.digest)}</code></details></aside></div>
+  const history = state.evidence.map(row=>[`<a href="#evidence/${row.id}">执行 ${row.run_id}</a>`, esc(row.report ? row.report.summary : '（正文已归档）'), esc(row.reviewer || '待复核')]);
+  const archived = report ? '' : `<p class="empty">${esc(current.archive_error ? `归档副本暂不可用：${current.archive_error}` : '证据正文已迁入归档存储，点击「导出证据」获取完整报告。')}</p>`;
+  return `${heading(topic.modules[3], report ? report.summary : '证据正文已归档', `<button id="download" data-id="${current.id}">导出证据</button>`)}
+    <div class="spread evidence-top">${report ? `<dl class="metrics">${metrics}</dl>` : archived}<aside class="brief"><h2>复核签署</h2>${review}<details><summary>结果校验码</summary><code class="digest">${esc(current.digest)}</code></details></aside></div>
     ${sections}<details><summary>历史证据</summary>${records(['执行','结论','复核'], history)}</details>`;
 }
 

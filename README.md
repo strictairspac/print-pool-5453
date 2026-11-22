@@ -20,6 +20,7 @@ docker compose up -d --build --wait
 - FastAPI 文档 `http://127.0.0.1:19302/docs`
 - PostgreSQL 16 端口 `127.0.0.1:17802`，账号 `app`，演示库 `workflow`
 - `docker compose exec -T backend python -m scripts.seed_demo` 手动重跑演示数据
+- `docker compose exec -T backend python -m scripts.archive_evidence` 手动执行一轮证据归档
 - `docker compose logs -f backend worker` 查看运行情况
 - `docker compose down` 停容器并保留演示卷
 
@@ -35,6 +36,10 @@ docker compose up -d --build --wait
 
 `SEED_DEMO=true` 启动时生成账号与一个业务样例。工作台新建档案会预填样例。可编辑表单中的数值、文本和结构化 JSON 后提交。业务说明中的原始文件是上游示例，演示数据通过表单录入。角色枚举位于后端 `src/constants/workflow.py` 与前端 `src/constants/workflow.js`。执行状态枚举也位于这两个文件，使用于队列、列表和执行详情。证据校验码是报告 JSON 按 UTF-8、键排序且省略多余空格序列化后的 SHA-256。
 
+### 证据归档
+
+已签署（复核完成）且正文不小于 `ARCHIVE_MIN_BYTES` 的证据，由 worker 每 `ARCHIVE_SWEEP_SECONDS` 秒按 `ARCHIVE_BATCH` 的批量迁入 `ARCHIVE_DIR`（默认 `/work/evidence-archive`，backend 与 worker 共享的演示卷）。归档对象按校验码内容寻址：副本落盘并回读核验通过后，才在一个事务里清掉库中正文并登记归档键；归档失败时库中正文原样保留。重试写同一对象键，不重复占用空间，也不覆盖已核验的副本。迁移期间与迁移之后，旧下载链接返回的字节完全一致，签署信息与校验码不变；库中正文清理后若归档副本缺失或损坏，下载返回 502 并写明原因。
+
 ## 工程结构
 
 | 服务 | 实现 |
@@ -47,6 +52,6 @@ docker compose up -d --build --wait
 
 编辑 `backend/src/services/domain.py` 可修改试算方法与业务表单说明。API 路由、数据定义和页面位于 `backend/src/routes/`、`backend/src/models/` 与 `frontend/src/pages/`。开发时更新源文件后重新构建对应服务。
 
-`.env.example` 提供 `FRONTEND_PORT`、`BACKEND_PORT`、`DB_PORT`、`DB_PASSWORD`、`AUTH_KEY` 、`SEED_DEMO` 与 `NETWORK_SUBNET`。修改 `NETWORK_SUBNET` 可避开本机现有容器网段。所有发布的端口绑定本机回环地址。接入独立部署前需配置自己的凭据并按业务范围做独立验收。
+`.env.example` 提供 `FRONTEND_PORT`、`BACKEND_PORT`、`DB_PORT`、`DB_PASSWORD`、`AUTH_KEY` 、`SEED_DEMO` 、`ARCHIVE_DIR`、`ARCHIVE_MIN_BYTES`、`ARCHIVE_BATCH`、`ARCHIVE_SWEEP_SECONDS` 与 `NETWORK_SUBNET`。修改 `NETWORK_SUBNET` 可避开本机现有容器网段。所有发布的端口绑定本机回环地址。接入独立部署前需配置自己的凭据并按业务范围做独立验收。
 
 [MIT License](LICENSE)

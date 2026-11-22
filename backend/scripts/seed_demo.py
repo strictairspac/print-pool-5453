@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
 from src.config.settings import IS_MYSQL, engine
 from src.constants.workflow import Role
+from src.models.migrate import ensure_schema
 from src.models.tables import audit, cases, evidence, runs, schema, users
 from src.services.domain import SPEC
 from src.services.security import hash_password
@@ -31,4 +32,5 @@ def seed():
 
 if __name__ == '__main__':
     schema.create_all(engine)
+    ensure_schema(engine)
     print(seed())

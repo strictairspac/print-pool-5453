@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 from sqlalchemy import URL, create_engine
 from redis import Redis
 
@@ -12,3 +14,7 @@ engine = create_engine(URL, pool_pre_ping=True)
 cache = Redis.from_url(os.getenv('REDIS_URL', 'redis://redis:6379/0'), socket_timeout=3)
 AUTH_KEY = os.environ['AUTH_KEY']
 ARTIFACTS = os.getenv('ARTIFACTS_DIR', '/work')
+ARCHIVE_DIR = os.getenv('ARCHIVE_DIR', str(Path(ARTIFACTS) / 'evidence-archive'))
+ARCHIVE_MIN_BYTES = int(os.getenv('ARCHIVE_MIN_BYTES', '1024'))
+ARCHIVE_BATCH = int(os.getenv('ARCHIVE_BATCH', '2'))
+ARCHIVE_SWEEP_SECONDS = float(os.getenv('ARCHIVE_SWEEP_SECONDS', '30'))

@@ -8,6 +8,7 @@ from src.config.settings import cache, engine
 from src.constants.workflow import Status
 from src.models.tables import audit, cases, evidence, runs
 from src.services import domain
+from src.services.archive import load_report
 from src.utils.encoding import canonical
 from src.utils.time import utc_time
 
@@ -19,6 +20,17 @@ def log(conn, actor, action, reference):
 def recent(table):
     with engine.connect() as conn:
         return [dict(row) for row in conn.execute(select(table).order_by(table.c.id.desc()).limit(100)).mappings()]
+
+
+def recent_evidence():
+    rows = recent(evidence)
+    for row in rows:
+        try:
+            row['report'] = load_report(row)
+        except HTTPException as exc:
+            row['report'] = None
+            row['archive_error'] = exc.detail
+    return rows
 
 
 def found(conn, table, identity):

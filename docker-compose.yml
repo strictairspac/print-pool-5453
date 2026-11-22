@@ -11,6 +11,10 @@ x-python: &python
     AUTH_KEY: ${AUTH_KEY:-dev-example-key-local-5300-change-me}
     SEED_DEMO: ${SEED_DEMO:-true}
     REDIS_URL: redis://redis:6379/0
+    ARCHIVE_DIR: ${ARCHIVE_DIR:-/work/evidence-archive}
+    ARCHIVE_MIN_BYTES: ${ARCHIVE_MIN_BYTES:-1024}
+    ARCHIVE_BATCH: ${ARCHIVE_BATCH:-2}
+    ARCHIVE_SWEEP_SECONDS: ${ARCHIVE_SWEEP_SECONDS:-30}
   volumes: [artifacts:/work]
 services:
   frontend:
